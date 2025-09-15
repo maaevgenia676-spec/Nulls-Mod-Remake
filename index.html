@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Генератор модов</title>
+  <link rel="manifest" href="manifest.json">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/theme/material-darker.min.css">
+  <link rel="stylesheet" href="style.css?v=1.4" />
+
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.16/mode/javascript/javascript.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <header class="text-center py-4">
+    <h1 class="display-6 fw-bold">Генератор модов</h1>
+    <p class="text-muted-2 mb-0">Всё, что нужно мододелу — красиво и быстро ✨</p>
+  </header>
+
+  <main class="flex-fill d-flex justify-content-center align-items-start">
+    <div class="container-fluid">
+      <ul class="nav nav-pills frosted mb-3 justify-content-center" id="mainTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="visual-tab" data-bs-toggle="pill" data-bs-target="#visual-pane" type="button" role="tab">Визуально</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="code-tab" data-bs-toggle="pill" data-bs-target="#code-pane" type="button" role="tab">Код (.json)</button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="tabContent">
+
+        <div class="tab-pane fade show active" id="visual-pane" role="tabpanel" aria-labelledby="visual-tab">
+          <div class="row justify-content-center g-4">
+
+            <div class="col-12 col-lg-7 d-flex flex-column gap-3">
+
+              <div class="card soft">
+                <div class="card-body">
+                  <h5 class="section-title">Предпросмотр JSON</h5>
+                  <div id="meta-preview" class="meta-preview mb-3 d-none">
+                    <h5 id="preview-title" class="preview-title"></h5>
+                    <p id="preview-description" class="preview-description"></p>
+                    <p id="preview-author" class="preview-author"></p>
+                  </div>
+                  <pre class="preview-pre"><code id="json-preview" class="language-json"></code></pre>
+                </div>
+              </div>
+
+              <div class="card soft">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                    <h5 class="section-title mb-0">Мета-информация</h5>
+                    <div class="d-flex align-items-center gap-2">
+                      <div>
+                        <label for="language-select" class="form-label subtle mb-0">Язык</label>
+                        <select id="language-select" class="form-select form-select-sm form-select-dark d-inline-block w-auto"></select>
+                      </div>
+                      <small class="text-warning fw-semibold" style="max-width: 220px;">
+                        Если у вас 1 язык — используйте EN (требование Null's Brawl Mods)
+                      </small>
+                    </div>
+                  </div>
+                  <div class="row g-2">
+                    <div class="col-12 col-md-6">
+                      <label class="form-label subtle">@title</label>
+                      <input type="text" id="meta-title" class="form-control form-control-dark" placeholder="Название мода">
+                    </div>
+                    <div class="col-12 col-md-6">
+                      <label class="form-label subtle">@author</label>
+                      <input type="text" id="meta-author" class="form-control form-control-dark" placeholder="Автор">
+                    </div>
+                    <div class="col-12">
+                      <label class="form-label subtle">@description</label>
+                      <textarea id="meta-description" class="form-control form-control-dark" rows="3" placeholder="Описание мода"></textarea>
+                    </div>
+                    <div class="col-12 col-md-4">
+                      <label class="form-label subtle">@version</label>
+                      <input type="text" id="meta-version" class="form-control form-control-dark" placeholder="1.0.0">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card soft">
+                <div class="card-body d-flex align-items-center flex-column flex-md-row gap-3">
+                  <div class="flex-shrink-0">
+                    <img id="icon-preview" class="icon-preview d-none" src="" alt="Иконка мода">
+                  </div>
+                  <div class="flex-grow-1">
+                    <h5 class="section-title">Иконка мода</h5>
+                    <p class="text-muted-2 small">Размер: 640x640, Формат: .png</p>
+                    <label for="mod-icon" class="btn btn-outline-light d-inline-block">Загрузить иконку</label>
+                    <input type="file" id="mod-icon" class="d-none" accept="image/png">
+                    <button id="remove-icon-btn" class="btn btn-sm btn-outline-danger d-none mt-2">Удалить</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card soft">
+                <div class="card-body">
+                  <h5 class="section-title">Добавление файлов</h5>
+                  <div class="input-group mb-3">
+                    <label class="input-group-text">Папка</label>
+                    <select id="folder-select" class="form-select form-select-dark"></select>
+                  </div>
+                  <label for="file-input" class="btn btn-primary glow w-100">Выбрать файлы</label>
+                  <input type="file" id="file-input" class="d-none" multiple>
+                  <ul id="files-list" class="list-group list-group-dark mt-3"></ul>
+                </div>
+              </div>
+
+              <div class="card soft">
+                <div class="card-body">
+                  <h5 class="section-title">Редактор объектов</h5>
+                  <div class="d-flex gap-2 flex-wrap">
+                    <div class="custom-select-container flex-grow-1">
+                      <input type="text" id="add-object-group" class="form-control form-control-dark custom-select-input" placeholder="Поиск групп...">
+                      <div class="options-container" id="add-object-group-options"></div>
+                    </div>
+                    <button id="add-object-btn" class="btn btn-primary glow flex-shrink-0">Добавить</button>
+                  </div>
+                  <div id="groups-root" class="groups-root mt-3"></div>
+                </div>
+              </div>
+
+
+            </div>
+
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="code-pane" role="tabpanel" aria-labelledby="code-tab">
+          <div class="card soft">
+            <div class="card-body">
+              <h5 class="section-title">Редактор JSON</h5>
+              <div id="editor" class="code-editor"></div>
+              <div class="d-flex justify-content-end gap-2 mt-3">
+                <button id="format-json" class="btn btn-outline-light">Форматировать</button>
+                <button id="apply-json" class="btn btn-primary glow">Применить к визуальному</button>
+              </div>
+              <div id="code-error" class="mt-2 text-danger small d-none"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="mt-auto py-3 bg-dark">
+    <div class="container d-flex justify-content-center gap-3 flex-wrap">
+      <button id="export-btn" class="btn btn-success glow">Экспорт ZIP</button>
+      <button id="import-btn" class="btn btn-warning text-dark glow">Импорт ZIP</button>
+      <button id="reset-data-btn" class="btn btn-outline-danger">Сбросить данные</button>
+      <input type="file" id="import-zip" class="d-none" accept=".zip">
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="script.js?v=1.4"></script>
+
+  <div class="container text-center py-3">
+    <p class="text-muted-2 small mb-0">Версия 1.4<br>От <a href='https://t.me/s_darkmean'>darkmean</a></p>
+  </div>
+</body>
+</html>
